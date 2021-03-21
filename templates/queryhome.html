@@ -1,0 +1,105 @@
+<html>
+
+<head>
+    <title>Metatagger</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/static/css/main.css" />
+    <noscript>
+        <link rel="stylesheet" href="/static/css/noscript.css" />
+    </noscript>
+
+</head>
+
+<body class="is-preload">
+    <!-- Sidebar -->
+    <section id="sidebar">
+        <div class="inner">
+            <nav>
+                <ul>
+                    <li><a href="/">Welcome</a></li>
+                    <li><a href="/pages/query" class="scrolly active active-locked">See In Action</a></li>
+                    <li><a href="/pages/referancedata">Check Referance Data</a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+    <!-- Wrapper -->
+    <div id="wrapper">
+        <!-- Intro -->
+        <section id="intro" class="wrapper style1 fullscreen fade-up">
+            <div class="inner">
+                <div id="queryform">
+                    <h1>Please Enter Your Query: </h1>
+                    <form method="POST" action="#">
+                        <textarea id="query_input" label="query_input" name="query_input"></textarea>
+                        <br />
+                        <input type="button" id="queryButton" value="Get Tags" />
+                    </form>
+                </div>
+
+                <div id="resultdiv" style="display: none">
+                    <div>Search Query: <span id="searchedQuery"></span></div>
+                    <div id="listdisplay"></div>
+                    <div>
+                        <button id="retry">Go Back</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Scripts -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery.scrollex.min.js"></script>
+    <script src="/static/js/jquery.scrolly.min.js"></script>
+    <script src="/static/js/browser.min.js"></script>
+    <script src="/static/js/breakpoints.min.js"></script>
+    <script src="/static/js/util.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#queryButton").click(function () {
+                var query_input = $("#query_input").val();
+                var request_json = {
+                    query: query_input
+                }
+
+                fetch('/api/v1/metatagger/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(request_json),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        //hide the form
+                        $("#queryform").hide();
+                        console.log(data);
+                        var result = data.result;
+                        var list = $("#listdisplay").append('<ul></ul>').find('ul');
+                        $("#searchedQuery").html(data.data);
+                        $.each(result, function (name, value) {
+                            var valclass = "not_found_meta"
+                            if (value > 65) {
+                                valclass = "found_meta"
+                            }
+                            //style="height: 50px; width: 600px;display: flex;justify-content: center;flex-direction: column;"
+                            list.append('<li class="result_list_li"><span class="list_cat">' + name + '</span><span class="list_val ' + valclass + '">' + value + '</span></li>');
+                        })
+                        $("#resultdiv").show();
+                    })
+            });
+
+            $("#retry").click(function () {
+                $("#queryform").show();
+                $("#listdisplay").html("");
+                $("#searchedQuery").html("");
+                $("#resultdiv").hide();
+            })
+        });
+    </script>
+
+</body>
+
+</html>

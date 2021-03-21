@@ -1,0 +1,109 @@
+<html>
+
+<head>
+    <title>Metatagger</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/static/css/main.css" />
+    <link rel="stylesheet" href="/static/css/jquery.dataTables.min.css" />
+    <noscript>
+        <link rel="stylesheet" href="/static/css/noscript.css" />
+    </noscript>
+
+</head>
+
+<body class="is-preload">
+    <!-- Sidebar -->
+    <section id="sidebar">
+        <div class="inner">
+            <nav>
+                <ul>
+                    <li><a href="/">Welcome</a></li>
+                    <li><a href="/pages/query">See In Action</a></li>
+                    <li><a href="/pages/referancedata" class="scrolly active active-locked">Check Referance Data</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+    <!-- Wrapper -->
+    <div id="wrapper">
+        <!-- Intro -->
+        <section id="intro">
+            <div class="inner">
+                <div id="myTable">
+                    <table id="table_id" class="display" style="color: black;">
+                        <thead style="background: black;">
+                            <tr>
+                                <th>Id</th>
+                                <th>Category</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyrefdata">
+                        </tbody>
+                    </table>
+                </div>
+                <button id="export" style="
+                background: black;
+            ">Export As Excel</button>
+            </div>
+        </section>
+    </div>
+    <!-- Scripts -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery.scrollex.min.js"></script>
+    <script src="/static/js/jquery.scrolly.min.js"></script>
+    <script src="/static/js/jquery.dataTables.min.js"></script>
+    <script src="/static/js/jquery.table2excel.min.js"></script>
+    <script src="/static/js/browser.min.js"></script>
+    <script src="/static/js/breakpoints.min.js"></script>
+    <script src="/static/js/util.js"></script>
+    <script src="/static/js/main.js"></script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            $("#export").hide();
+            fetch("/api/v1/metatagger/refdata")
+                .then(response => response.json())
+                .then(data => {
+                    var category = data.category;
+                    var description = data.description;
+                    var id = data.id;
+                    var title = data.title;
+                    var tableBody = $("#tbodyrefdata");
+                    $.each(category, function (index, value) {
+                        console.log(index, value)
+                        tableBody.append(`<tr><td>${id[index]}</td><td>${value}</td><td>${title[index]}</td><td style="display: block; overflow: hidden; height: 20px; width: 400px;">${description[index]}</td></tr>`);
+                    });
+
+                    $('#table_id').DataTable();
+                    $("#table_id_length").hide();
+                    $("#table_id_filter").hide();
+                    $("#export").show();
+                })
+
+
+        });
+
+
+        $("#export").click(function () {
+            $("#table_id").table2excel({
+                exclude: ".noExl",
+                name: "Excel Document Name",
+                filename: "myFileName" + new Date().toISOString().replace(/[\-\:\.]/g, "") + ".xls",
+                fileext: ".xls",
+                exclude_img: true,
+                exclude_links: true,
+                exclude_inputs: true,
+                preserveColors: false
+            });
+        });
+    </script>
+
+</body>
+
+</html>
